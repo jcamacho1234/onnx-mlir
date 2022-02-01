@@ -24,6 +24,7 @@
 #include "mlir/Parser.h"
 #include "mlir/Pass/PassManager.h"
 #include "mlir/Transforms/Passes.h"
+#include "llvm/ADT/SmallVector.h"
 
 #include "onnx-mlir/Compiler/OMCompilerTypes.h"
 
@@ -34,8 +35,22 @@
 extern llvm::cl::OptionCategory OnnxMlirOptions;
 extern llvm::cl::opt<std::string> instrumentONNXOps;
 
+// The following functions are useful for drivers building upon onnx-mlir.
+
 void setTargetCPU(const std::string &cpu);
+void setTargetArch(const std::string &arch);
 void setTargetTriple(const std::string &triple);
+void setOptLevel(const onnx_mlir::OptLevel level);
+// Set compile context according to the (key, value) fields passed.
+void setCompileContext(mlir::MLIRContext &context,
+    const llvm::SmallVector<std::pair<onnx_mlir::OptionKind, std::string>, 4>
+        options);
+// Set compile context, legacy C array and string representation.
+void setCompileContext(mlir::MLIRContext &context,
+    const onnx_mlir::OptionKind *key, const char **val, const int64_t num);
+
+void loadMLIR(std::string inputFilename, mlir::MLIRContext &context,
+    mlir::OwningModuleRef &module);
 
 std::string compileModuleToObject(
     const mlir::OwningModuleRef &module, std::string outputBaseName);
@@ -55,6 +70,19 @@ void processInputFile(std::string inputFilename, mlir::MLIRContext &context,
     mlir::OwningModuleRef &module, std::string *errorMessage);
 void processInputArray(const void *onnxBuffer, int bufferSize,
     mlir::MLIRContext &context, mlir::OwningModuleRef &module);
+onnx_mlir::InputIRLevelType determineInputIRLevel(
+    mlir::OwningModuleRef &module);
 
+void outputCode(
+    mlir::OwningModuleRef &module, std::string filename, std::string extension);
+void emitOutputFiles(std::string outputBaseName,
+    onnx_mlir::EmissionTargetType emissionTarget, mlir::MLIRContext &context,
+    mlir::OwningModuleRef &module);
+void emitOutput(mlir::OwningModuleRef &module, mlir::MLIRContext &context,
+    std::string outputBaseName, mlir::PassManager &pm,
+    onnx_mlir::EmissionTargetType emissionTarget);
+
+void setupModule(mlir::OwningModuleRef &module, mlir::MLIRContext &context,
+    std::string outputBaseName);
 int compileModule(mlir::OwningModuleRef &module, mlir::MLIRContext &context,
     std::string outputBaseName, onnx_mlir::EmissionTargetType emissionTarget);
