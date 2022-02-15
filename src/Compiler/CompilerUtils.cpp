@@ -575,14 +575,8 @@ void addONNXToMLIRPasses(mlir::PassManager &pm) {
   // 2. Easy to compare two approaches.
   // In future, only the dynamic pass, ONNXOpTransformPass, will be used for
   // this function.
-
   pm.addNestedPass<FuncOp>(mlir::createDecomposeONNXToONNXPass());
-  //pm.addNestedPass<FuncOp>(mlir::createONNXSampleOpTransformPass());
-  //pm.addNestedPass<FuncOp>(mlir::createONNXLeakyReluOpTransformPass());
-  pm.addNestedPass<FuncOp>(mlir::createONNXToAtenLeakyReluOpTransformPass());
-  pm.addNestedPass<FuncOp>(mlir::createONNXToAtenMaxPool2dOpTransformPass());
-  pm.addNestedPass<FuncOp>(mlir::createONNXToAtenConv2DOpTransformPass());
-
+  
   pm.addPass(mlir::createShapeInferencePass());
   pm.addPass(mlir::createCanonicalizerPass());
   pm.addPass(mlir::createShapeInferencePass());
@@ -602,6 +596,18 @@ void addONNXToMLIRPasses(mlir::PassManager &pm) {
     }
   }
 
+  pm.addPass(mlir::createONNXToAtenModifyMainFunctionPass());
+  pm.addNestedPass<FuncOp>(mlir::createONNXToAtenTypesTransformPass());
+
+  pm.addNestedPass<FuncOp>(mlir::createONNXToAtenConstantOpTransformPass());
+  pm.addNestedPass<FuncOp>(mlir::createONNXToAtenConv2DOpTransformPass());
+  pm.addNestedPass<FuncOp>(mlir::createONNXToAtenLeakyReluOpTransformPass());
+  pm.addNestedPass<FuncOp>(mlir::createONNXToAtenMaxPool2dOpTransformPass());
+
+  pm.addNestedPass<FuncOp>(mlir::createONNXToAtenFinalizeTypesTransformPass());
+  
+  pm.addPass(mlir::createCSEPass());
+  
   // Clean dead code.
   pm.addPass(mlir::createSymbolDCEPass());
 }

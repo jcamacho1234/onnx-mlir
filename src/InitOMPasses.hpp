@@ -42,6 +42,22 @@ void initOMPasses() {
   }); 
 
   mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
+    return mlir::createONNXToAtenConstantOpTransformPass();
+  }); 
+
+  mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
+    return mlir::createONNXToAtenTypesTransformPass();
+  }); 
+
+  mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
+    return mlir::createONNXToAtenFinalizeTypesTransformPass();
+  }); 
+
+  mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
+    return mlir::createONNXToAtenModifyMainFunctionPass();
+  }); 
+  
+  mlir::registerPass([]() -> std::unique_ptr<mlir::Pass> {
     return mlir::createDecomposeONNXToONNXPass();
   });
 

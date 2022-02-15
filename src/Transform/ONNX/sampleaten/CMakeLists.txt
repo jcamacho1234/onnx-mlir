@@ -64,6 +64,25 @@ add_onnx_mlir_library(ONNXToAtenMaxPoolSingleOutOpTransform
   MLIRMemRefTransforms
   )
 
+add_onnx_mlir_library(ONNXToAtenConstantOpTransform
+  ConstOpTransformToTorchPass.cpp 
+
+  LINK_LIBS PUBLIC
+  OMONNXOps
+  OMSupport
+  OMONNXRewrite
+  OMShapeInference
+  MLIRIR
+  MLIRPass
+  MLIRTransforms
+  TorchMLIRTorchDialect
+  TorchMLIRTorchUtils
+  TorchMLIRInitAll
+  TorchMLIRTorchConversionDialect
+  TorchMLIRTorchPasses
+  MLIRMemRefTransforms
+  )
+
 add_onnx_mlir_library(ONNXToAtenConv2DOpTransform
   Conv2DOpTransformToTorchPass.cpp 
 
@@ -82,3 +101,42 @@ add_onnx_mlir_library(ONNXToAtenConv2DOpTransform
   TorchMLIRTorchPasses
   MLIRMemRefTransforms
   )
+
+add_onnx_mlir_library(ONNXToAtenTypesTransform
+  TypesTransformToTorchPass.cpp
+
+  LINK_LIBS PUBLIC
+  OMONNXOps
+  OMSupport
+  OMONNXRewrite
+  OMShapeInference
+  MLIRIR
+  MLIRPass
+  MLIRTransforms
+  TorchMLIRTorchDialect
+  TorchMLIRTorchUtils
+  TorchMLIRInitAll
+  TorchMLIRTorchConversionDialect
+  TorchMLIRTorchPasses
+  MLIRMemRefTransforms
+  )
+
+add_onnx_mlir_library(ONNXToAtenFinalizeTypesTransform
+  TypesTransformToTorchPass.cpp
+
+  LINK_LIBS PUBLIC
+  OMONNXOps
+  OMSupport
+  OMONNXRewrite
+  OMShapeInference
+  MLIRIR
+  MLIRPass
+  MLIRTransforms
+  TorchMLIRTorchDialect
+  TorchMLIRTorchUtils
+  TorchMLIRInitAll
+  TorchMLIRTorchConversionDialect
+  TorchMLIRTorchPasses
+  MLIRMemRefTransforms
+  )
+
