@@ -603,9 +603,10 @@ void addONNXToMLIRPasses(mlir::PassManager &pm) {
   pm.addNestedPass<FuncOp>(mlir::createONNXToAtenConv2DOpTransformPass());
   pm.addNestedPass<FuncOp>(mlir::createONNXToAtenLeakyReluOpTransformPass());
   pm.addNestedPass<FuncOp>(mlir::createONNXToAtenMaxPool2dOpTransformPass());
+  pm.addNestedPass<FuncOp>(mlir::createONNXToAtenConstantPadNdOpTransformPass());  
 
   pm.addNestedPass<FuncOp>(mlir::createONNXToAtenFinalizeTypesTransformPass());
-  
+
   pm.addPass(mlir::createCSEPass());
   
   // Clean dead code.

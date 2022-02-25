@@ -127,6 +127,7 @@ public:
 	//	4) Create the torch tensor of shape as in 2,
 	//	5) Create the torch op and replace it.
 
+    /*
     llvm::outs() << "sparese_value_attr:" <<  sparese_value_attr << "\n" << "\n";
     llvm::outs() << "value_attr :" <<  value_attr << "\n" << "\n";
     llvm::outs() << "va  :" <<  va << "\n" << "\n";
@@ -136,31 +137,48 @@ public:
     llvm::outs() << "value_ints_attr_array :" <<  value_ints_attr_array << "\n" << "\n";
     llvm::outs() << "value_str_attr :" <<  value_str_attr << "\n" << "\n";
     llvm::outs() << "value_strs_attr_array :" <<  value_strs_attr_array << "\n" << "\n";
-
+    */
 
     llvm::outs() << "CONSTFLOATOP operation creation value_attr type: " <<  val->getType() << "\n" << "\n";
     //llvm::outs() << "CONSTFLOATOP array tensor type 1: " <<  value_attr << "\n" << "\n";
 
     TensorType flt_array_tensor_type  = value_attr.getType().cast<TensorType>();
-    TensorType op_tensor_type = op->getResult(0).getType().cast<TensorType>();
-    auto resultTy = Torch::ValueTensorType::get(op.getContext(), op_tensor_type.getShape(), op_tensor_type.getElementType());
+    TensorType op_tensor_type         = op->getResult(0).getType().cast<TensorType>();
+
+    ::mlir::Attribute value_attr_finalized;
+    Type tensor_element_type;
+    if (auto integerType = op_tensor_type.getElementType().dyn_cast<IntegerType>()) {
+      //////////// TODO: Only handles dense vectors of APInt type, need to handle other types ///////////////////
+      tensor_element_type = IntegerType::get(context, integerType.getWidth(), IntegerType::Signed);
+      auto dense_value_attr = value_attr.dyn_cast<::mlir::DenseElementsAttr>();
+      ShapedType dense_value_type = RankedTensorType::get(op_tensor_type.getShape(), tensor_element_type);
+      std::vector<APInt> intValues;      
+      for (auto n : dense_value_attr.getValues<APInt>())
+	intValues.push_back(n);
+      auto new_dense_value_attr = DenseElementsAttr::get(dense_value_type, intValues);
+      value_attr_finalized = new_dense_value_attr;      
+    } else {
+      tensor_element_type = op_tensor_type.getElementType();
+      value_attr_finalized = value_attr;      
+    }
+ 
+    auto resultTy = Torch::ValueTensorType::get(op.getContext(), op_tensor_type.getShape(), tensor_element_type);
 
     llvm::outs() << "CONSTFLOATOP operation creation: result type " << "\n" << resultTy << "\n" << "\n";
 
     auto one = 1;
     auto three = 3;
 
-
-    auto ty   = IntegerType::get(op.getContext(), 64);
-    auto f33  = IntegerAttr::get(ty, three);
+    //auto ty   = IntegerType::get(op.getContext(), 64);
+    //auto f33  = IntegerAttr::get(ty, three);
     //Value f3v = rewriter.create<ConstantIntOp>(loc,f33);
-    auto xTy      = Torch::ValueTensorType::get(context, flt_array_tensor_type.getShape(), flt_array_tensor_type.getElementType());
+    //auto xTy      = Torch::ValueTensorType::get(context, flt_array_tensor_type.getShape(), flt_array_tensor_type.getElementType());
 
     //llvm::outs() << "XTY IS HERE " << "\n" << xTy << "\n"; 
 
     //Value constfloatop = rewriter.create<Torch::ConstantFloatOp>(loc, resultTy, value_attr.cast<FloatAttr>());
 
-    Value constTensorOp = rewriter.create<Torch::ValueTensorLiteralOp>(loc, resultTy, value_attr);
+    Value constTensorOp = rewriter.create<Torch::ValueTensorLiteralOp>(loc, resultTy, value_attr_finalized);
       
     //llvm::outs() << "constfloatop operation creation" << "\n" << constfloatop << "\n" << "\n";
 
